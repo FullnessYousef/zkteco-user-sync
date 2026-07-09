@@ -5,9 +5,9 @@ an Excel file. Upload a spreadsheet of users, review the parsed list (with
 validation), pick a device, and push every user — **with their PIN/password** —
 straight onto the terminal over the local network.
 
-Built with [NativePHP for Desktop](https://nativephp.com) (Laravel + Vue/Inertia
-wrapped in Electron), so it ships as a native Windows app while staying a normal
-Laravel codebase underneath.
+Built with [NativePHP for Desktop](https://nativephp.com) (Laravel + React/Inertia
++ [shadcn/ui](https://ui.shadcn.com) wrapped in Electron), so it ships as a native
+Windows app while staying a normal Laravel codebase underneath.
 
 ---
 
@@ -122,6 +122,6 @@ any hardware.
 
 ## Tech stack
 
-Laravel 13 · Vue 3 (Options API) + Inertia · Tailwind CSS 4 · NativePHP for
-Desktop 2 (Electron) · `coding-libs/zkteco-php` · `phpoffice/phpspreadsheet` ·
-SQLite.
+Laravel 13 · React 19 + Inertia · **shadcn/ui** (Radix + Tailwind CSS 4) ·
+TypeScript · NativePHP for Desktop 2 (Electron) · `coding-libs/zkteco-php` ·
+`phpoffice/phpspreadsheet` · SQLite.
