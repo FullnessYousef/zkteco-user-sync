@@ -24,6 +24,11 @@ class FakeZkteco extends ZKTeco
     /** @var list<string> user_ids that should be rejected by the device */
     public array $failUserIds = [];
 
+    /** @var list<int> device slots (uid) that were removed */
+    public array $removed = [];
+
+    public bool $cleared = false;
+
     public bool $disabled = false;
 
     public function __construct()
@@ -69,6 +74,21 @@ class FakeZkteco extends ZKTeco
         }
 
         return 'ACK';
+    }
+
+    public function removeUser(int $uid)
+    {
+        $this->removed[] = $uid;
+
+        return true;
+    }
+
+    public function clearAllUsers()
+    {
+        $this->cleared = true;
+        $this->existingUsers = [];
+
+        return true;
     }
 
     public function serialNumber()

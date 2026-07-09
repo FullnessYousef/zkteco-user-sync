@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DeviceUserRequest;
 use App\Http\Requests\StoreDeviceRequest;
 use App\Http\Requests\UpdateDeviceRequest;
 use App\Models\Device;
+use App\Services\Import\ImportedUserValidator;
 use App\Services\Zkteco\DeviceDiscoveryScanner;
 use App\Services\Zkteco\ZktecoDeviceService;
 use Illuminate\Http\JsonResponse;
@@ -94,6 +96,45 @@ class DeviceController extends Controller
             ],
             'result' => $service->listUsers($device),
         ]);
+    }
+
+    public function updateDeviceUser(Device $device, string $uid, DeviceUserRequest $request, ImportedUserValidator $validator, ZktecoDeviceService $service): RedirectResponse
+    {
+        $data = $validator->validate(
+            $request->input('user_id'),
+            $request->input('name'),
+            $request->input('password'),
+            $request->input('card_number'),
+            $request->input('privilege'),
+        );
+
+        if (! $data['is_valid']) {
+            return back()->with('error', 'Cannot save: '.implode(' ', $data['errors']));
+        }
+
+        $result = $service->setDeviceUser($device, (int) $uid, $data);
+
+        return $result['ok']
+            ? back()->with('success', 'User updated on the device.')
+            : back()->with('error', 'Update failed: '.($result['error'] ?? 'unknown error'));
+    }
+
+    public function destroyDeviceUser(Device $device, string $uid, ZktecoDeviceService $service): RedirectResponse
+    {
+        $result = $service->removeDeviceUser($device, (int) $uid);
+
+        return $result['ok']
+            ? back()->with('success', 'User removed from the device.')
+            : back()->with('error', 'Remove failed: '.($result['error'] ?? 'unknown error'));
+    }
+
+    public function clearDeviceUsers(Device $device, ZktecoDeviceService $service): RedirectResponse
+    {
+        $result = $service->clearDeviceUsers($device);
+
+        return $result['ok']
+            ? back()->with('success', 'All users removed from the device.')
+            : back()->with('error', 'Failed: '.($result['error'] ?? 'unknown error'));
     }
 
     public function test(Device $device, ZktecoDeviceService $service): RedirectResponse

@@ -25,5 +25,8 @@ Route::put('/devices/{device}', [DeviceController::class, 'update'])->name('devi
 Route::delete('/devices/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
 Route::post('/devices/{device}/test', [DeviceController::class, 'test'])->name('devices.test');
 Route::get('/devices/{device}/users', [DeviceController::class, 'users'])->name('devices.users');
+Route::put('/devices/{device}/users/{uid}', [DeviceController::class, 'updateDeviceUser'])->name('devices.users.update');
+Route::delete('/devices/{device}/users/{uid}', [DeviceController::class, 'destroyDeviceUser'])->name('devices.users.destroy');
+Route::delete('/devices/{device}/users', [DeviceController::class, 'clearDeviceUsers'])->name('devices.users.clear');
 
 Route::get('/template', [TemplateController::class, 'download'])->name('template.download');

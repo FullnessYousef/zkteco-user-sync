@@ -112,6 +112,109 @@ class ZktecoDeviceService
     }
 
     /**
+     * Create or overwrite a single user at a specific device slot (uid). Used to
+     * edit a user that already exists on the device.
+     *
+     * @param  array{user_id: string, name_ascii: string, password: ?string, card_number: ?string, privilege: string}  $data
+     * @return array{ok: bool, error?: string}
+     */
+    public function setDeviceUser(Device $device, int $uid, array $data): array
+    {
+        $zk = $this->factory->make($device);
+        $connected = false;
+
+        try {
+            if (! $zk->connect()) {
+                return ['ok' => false, 'error' => 'Could not connect to the device.'];
+            }
+
+            $connected = true;
+            $zk->disableDevice();
+
+            $role = $data['privilege'] === ImportedUser::PRIVILEGE_ADMIN ? Util::LEVEL_ADMIN : Util::LEVEL_USER;
+
+            $result = $zk->setUser(
+                $uid,
+                $data['user_id'],
+                $data['name_ascii'],
+                (string) ($data['password'] ?? ''),
+                $role,
+                (int) ($data['card_number'] ?? 0),
+            );
+
+            if ($result === false) {
+                return ['ok' => false, 'error' => 'The device did not acknowledge the change.'];
+            }
+
+            return ['ok' => true];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        } finally {
+            $this->safe(fn () => $zk->enableDevice());
+            $this->safe(fn () => $zk->disconnect());
+            $device->update(['last_connected_at' => now(), 'last_connection_ok' => $connected]);
+        }
+    }
+
+    /**
+     * Remove a single user (by device slot uid) from the device.
+     *
+     * @return array{ok: bool, error?: string}
+     */
+    public function removeDeviceUser(Device $device, int $uid): array
+    {
+        $zk = $this->factory->make($device);
+        $connected = false;
+
+        try {
+            if (! $zk->connect()) {
+                return ['ok' => false, 'error' => 'Could not connect to the device.'];
+            }
+
+            $connected = true;
+            $zk->disableDevice();
+            $zk->removeUser($uid);
+
+            return ['ok' => true];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        } finally {
+            $this->safe(fn () => $zk->enableDevice());
+            $this->safe(fn () => $zk->disconnect());
+            $device->update(['last_connected_at' => now(), 'last_connection_ok' => $connected]);
+        }
+    }
+
+    /**
+     * Remove every user from the device.
+     *
+     * @return array{ok: bool, error?: string}
+     */
+    public function clearDeviceUsers(Device $device): array
+    {
+        $zk = $this->factory->make($device);
+        $connected = false;
+
+        try {
+            if (! $zk->connect()) {
+                return ['ok' => false, 'error' => 'Could not connect to the device.'];
+            }
+
+            $connected = true;
+            $zk->disableDevice();
+            $zk->clearAllUsers();
+
+            return ['ok' => true];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        } finally {
+            $this->safe(fn () => $zk->enableDevice());
+            $this->safe(fn () => $zk->disconnect());
+            $device->update(['last_connected_at' => now(), 'last_connection_ok' => $connected]);
+        }
+    }
+
+    /**
      * Push every valid user in the batch to the device, recording per-row results.
      */
     public function syncBatch(ImportBatch $batch, Device $device): void
