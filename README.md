@@ -87,17 +87,21 @@ npm run dev                # Vite
 php artisan queue:work     # processes the sync jobs
 ```
 
-## Building the Windows installer
+## Building & publishing (macOS · Windows · Linux)
 
 ```bash
-php artisan native:build win
+php artisan native:build mac      # → .dmg (+ .zip)
+php artisan native:build win      # → NSIS setup .exe
+php artisan native:build linux    # → .AppImage and .deb
 ```
 
 NativePHP bundles a static PHP binary from
-[`NativePHP/php-bin`](https://github.com/NativePHP/php-bin) (8.3 / 8.4 / 8.5
-`win-x64` are all available). For distribution beyond your own machine you'll
-want to code‑sign the installer (Azure Trusted Signing or a traditional
-certificate) to avoid SmartScreen warnings.
+[`NativePHP/php-bin`](https://github.com/NativePHP/php-bin) (8.3 / 8.4 / 8.5 for
+`win-x64`, `mac-*` and `linux-*`). Build each platform on that platform.
+
+For code signing / notarization and for **app-store** submission (Microsoft Store
+via MSIX is feasible; the Mac App Store is possible but heavy), see
+**[PUBLISHING.md](PUBLISHING.md)**.
 
 ## Tests
 
