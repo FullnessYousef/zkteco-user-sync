@@ -1,5 +1,6 @@
-import { Cpu, MonitorSmartphone } from 'lucide-react';
+import { Check, Cpu, MonitorSmartphone } from 'lucide-react';
 
+import { AnimatedNumber } from '@/components/animated-number';
 import { DataStream } from '@/components/data-stream';
 import { cn } from '@/lib/utils';
 
@@ -11,14 +12,38 @@ interface Props {
     deviceName?: string;
 }
 
+function ChipStack({ count }: { count: number }) {
+    const shown = Math.min(count, 5);
+
+    return (
+        <div className="flex h-5 items-center justify-center">
+            {count === 0 ? (
+                <span className="text-[11px] text-muted-foreground">all sent</span>
+            ) : (
+                <>
+                    {Array.from({ length: shown }).map((_, i) => (
+                        <span
+                            key={i}
+                            className="-ml-1.5 size-3.5 rounded-[3px] border-2 border-secondary/60 bg-primary/70 first:ml-0"
+                        />
+                    ))}
+                    {count > 5 && <span className="ml-1 text-[10px] text-muted-foreground">+{count - 5}</span>}
+                </>
+            )}
+        </div>
+    );
+}
+
 /**
- * Visualises users flowing from the app (left) to the device (right): an animated
- * stream while syncing and a fill-ring on the device showing progress.
+ * Visualises users flowing from the app (left) to the device (right): a shrinking
+ * chip stack on the app, an animated stream, and a fill-ring + count-up on the
+ * device that lands on a checkmark burst when the transfer completes clean.
  */
 export function SyncFlow({ status, total, synced, failed, deviceName }: Props) {
     const processed = synced + failed;
     const remaining = Math.max(0, total - processed);
     const isSyncing = status === 'syncing';
+    const isComplete = status === 'completed';
     const percent = total ? Math.min(100, Math.round((processed / total) * 100)) : 0;
 
     const radius = 32;
@@ -27,7 +52,7 @@ export function SyncFlow({ status, total, synced, failed, deviceName }: Props) {
 
     const pipeLabel = isSyncing
         ? 'sending…'
-        : status === 'completed'
+        : isComplete
           ? 'transfer complete'
           : status === 'failed'
             ? 'transfer failed'
@@ -41,8 +66,10 @@ export function SyncFlow({ status, total, synced, failed, deviceName }: Props) {
                         <MonitorSmartphone className="size-5" />
                     </div>
                     <p className="mt-2 text-xs font-medium">This app</p>
-                    <p className="text-lg font-semibold tabular-nums">{remaining}</p>
-                    <p className="text-[11px] text-muted-foreground">to send</p>
+                    <p className="text-lg font-semibold tabular-nums">
+                        <AnimatedNumber value={remaining} />
+                    </p>
+                    <ChipStack count={remaining} />
                 </div>
 
                 <div className="flex flex-1 flex-col justify-center">
@@ -67,24 +94,33 @@ export function SyncFlow({ status, total, synced, failed, deviceName }: Props) {
                                 strokeDashoffset={dashOffset}
                             />
                         </svg>
-                        <Cpu className="size-5 text-muted-foreground" />
+                        {isComplete && failed === 0 ? (
+                            <span className="relative flex items-center justify-center">
+                                <span className="absolute inline-flex size-10 animate-ping rounded-full bg-emerald-500/25" />
+                                <Check className="relative size-6 text-emerald-600" strokeWidth={3} />
+                            </span>
+                        ) : (
+                            <Cpu className="size-5 text-muted-foreground" />
+                        )}
                     </div>
                     <p className="mt-1 max-w-full truncate text-xs font-medium" title={deviceName}>
                         {deviceName ?? 'Device'}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">{synced} received</p>
+                    <p className="text-[11px] text-muted-foreground">
+                        <AnimatedNumber value={synced} /> received
+                    </p>
                 </div>
             </div>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs">
                 <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-emerald-500" /> {synced} synced
+                    <span className="size-2 rounded-full bg-emerald-500" /> <AnimatedNumber value={synced} /> synced
                 </span>
                 <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-rose-500" /> {failed} failed
+                    <span className="size-2 rounded-full bg-rose-500" /> <AnimatedNumber value={failed} /> failed
                 </span>
                 <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-muted-foreground/40" /> {remaining} pending
+                    <span className="size-2 rounded-full bg-muted-foreground/40" /> <AnimatedNumber value={remaining} /> pending
                 </span>
                 <span className="text-muted-foreground">· {percent}%</span>
             </div>

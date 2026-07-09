@@ -79,8 +79,10 @@ export default function ImportIndex({ batches, devices }: Props) {
                 </CardHeader>
                 <CardContent>
                     <label
-                        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
-                            dragOver ? 'border-primary bg-secondary' : 'border-border hover:border-muted-foreground/40'
+                        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-all ${
+                            dragOver
+                                ? 'scale-[1.01] border-primary bg-secondary ring-2 ring-primary/20'
+                                : 'border-border hover:border-muted-foreground/40'
                         }`}
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -89,7 +91,7 @@ export default function ImportIndex({ batches, devices }: Props) {
                         onDragLeave={() => setDragOver(false)}
                         onDrop={onDrop}
                     >
-                        <UploadCloud className="size-8 text-muted-foreground" />
+                        <UploadCloud className={`size-8 ${dragOver ? 'animate-bounce text-primary' : 'text-muted-foreground'}`} />
                         <p className="mt-3 text-sm">
                             <span className="font-medium text-primary">Choose a file</span> or drag it here
                         </p>

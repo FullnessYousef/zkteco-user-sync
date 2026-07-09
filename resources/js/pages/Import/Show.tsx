@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AnimatedNumber } from '@/components/animated-number';
 import { StatusBadge } from '@/components/status-badge';
 import { SyncFlow } from '@/components/sync-flow';
 import { cn } from '@/lib/utils';
@@ -151,15 +152,20 @@ export default function ImportShow({ batch, users, devices }: Props) {
                 {summary.map((card) => (
                     <Card key={card.label} className="animate-in fade-in-0 p-4 duration-500">
                         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{card.label}</p>
-                        <p className={cn('mt-1 text-2xl font-semibold', card.className)}>{card.value}</p>
+                        <p className={cn('mt-1 text-2xl font-semibold', card.className)}>
+                            <AnimatedNumber value={card.value} />
+                        </p>
                     </Card>
                 ))}
                 <Card className="animate-in fade-in-0 p-4 duration-500">
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Synced</p>
                     <p className="mt-1 text-2xl font-semibold text-blue-600">
-                        {batch.synced_count}
+                        <AnimatedNumber value={batch.synced_count} />
                         {batch.failed_count > 0 && (
-                            <span className="text-base font-medium text-rose-500"> · {batch.failed_count} failed</span>
+                            <span className="text-base font-medium text-rose-500">
+                                {' '}
+                                · <AnimatedNumber value={batch.failed_count} /> failed
+                            </span>
                         )}
                     </p>
                 </Card>
